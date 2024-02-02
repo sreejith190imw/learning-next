@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { HiPencilAlt } from 'react-icons/hi';
 import RemoveBtn from './RemoveBtn';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 interface Todo {
     _id: string;
@@ -12,7 +13,10 @@ interface Todo {
 }
 
 const TodoList = () => {
-    const [todos, setTodos] = useState<Todo[]>([]);
+    const initialTodos = useSelector((state: any) => state.todos);
+    console.log(initialTodos);
+    
+    const [todos, setTodos] = useState<Todo[]>(initialTodos);
 
     useEffect(() => {
         const fetchTodos = async () => {
@@ -23,8 +27,8 @@ const TodoList = () => {
                         'Cache-Control': 'no-store'
                     }
                 });
-                if(!response.data){
-                    throw new Error("Failed to fetch data");    
+                if (!response.data) {
+                    throw new Error("Failed to fetch data");
                 }
                 setTodos(response.data.todos);
             } catch (error) {
