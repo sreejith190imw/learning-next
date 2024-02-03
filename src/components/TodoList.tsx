@@ -5,7 +5,9 @@ import { HiPencilAlt } from 'react-icons/hi';
 import RemoveBtn from './RemoveBtn';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
-import { addTodo, addTodos } from '@/redux/slices/todoSlice';
+import { addTodos } from '@/redux/slices/todoSlice';
+import Paginate from './Paginate';
+import { useSearchParams } from 'next/navigation';
 
 interface Todo {
     _id: string;
@@ -14,14 +16,25 @@ interface Todo {
 }
 
 const TodoList = () => {
+    const searchParams = useSearchParams();
     const dispatch = useDispatch();
-    const todos = useSelector((state: any) => state.todos); 
+    const todos = useSelector((state: any) => state.todos);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(2);
+
+    const handleClick = () => {        
+        searchParams.get('page') && setPage(Number(searchParams.get('page')));
+        searchParams.get('limit') && setLimit(Number(searchParams.get('limit')));
+    }
 
     useEffect(() => {
         const fetchTodos = async () => {
             try {
                 const baseUrl = window.location.origin;
-                const response = await axios.get(`${baseUrl}/api/todos`, {
+                console.log(`${baseUrl}/api/todos?page=${page}&limit=${limit}`);
+                
+                const response = await axios.get(`${baseUrl}/api/todos?page=${page}&limit=${limit}`, {
                     headers: {
                         'Cache-Control': 'no-store'
                     }
@@ -29,19 +42,24 @@ const TodoList = () => {
                 if (!response.data) {
                     throw new Error("Failed to fetch data");
                 }
+                setTotal(Number(response.data.total));
                 dispatch(addTodos(response.data.todos));
             } catch (error) {
                 console.log(error)
             }
         }
         fetchTodos();
-    }, [dispatch]);
-    console.log(useSelector((state:any) => state.todos.length));
+    }, [dispatch, page, limit]);
 
     return (
         <>
             {
                 todos.length > 0 && todos.map((todo: any) => <Todo key={todo._id} todo={todo} />)
+            }
+            {
+                total > 0 && (
+                    <Paginate limit={2} total={total} clickHandler={handleClick} />
+                )
             }
         </>
 
