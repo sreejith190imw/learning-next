@@ -24,12 +24,19 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const urlParams : { page ?: string, limit ?: string } = Object.fromEntries(request.nextUrl.searchParams);
+        const page = Number(urlParams.page) || 1;
+        const limit = Number(urlParams.limit) || 2;     
+        const skip = (page - 1) * limit;   
+
         await connectMongo();
-        const todos = await Todo.find();
+        const total = (await Todo.find()).length;
+        const todos = await Todo.find().skip(skip).limit(limit);
         return NextResponse.json({
             message: "Todos Fetched Successfully",
+            total,
             todos
         })
     } catch (error) {
