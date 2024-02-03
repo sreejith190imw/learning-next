@@ -1,11 +1,11 @@
+import { deleteTodo } from '@/redux/slices/todoSlice'
 import axios from 'axios'
-import { useRouter } from 'next/navigation'
 import React from 'react'
 import { HiOutlineTrash } from 'react-icons/hi'
+import { useDispatch } from 'react-redux'
 
 const RemoveBtn = ({ id }: { id: string }) => {
-  const router = useRouter();
-
+  const dispatch = useDispatch();
   const handleClick = async () => {
     const confirmed = confirm("Are you sure you want to delete it?")
     if (!confirmed) {
@@ -16,8 +16,8 @@ const RemoveBtn = ({ id }: { id: string }) => {
       const response = await axios.delete(`${baseUrl}/api/todos?id=${id}`);
       if (!response.status.toString().startsWith("2")) {
         throw new Error("Error : Something went wrong")
-      }
-      router.refresh();   
+      }      
+      dispatch(deleteTodo(id));
     } catch (error) {
       console.log(error);
     }
